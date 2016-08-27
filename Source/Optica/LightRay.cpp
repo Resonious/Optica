@@ -2,35 +2,31 @@
 
 #include "Optica.h"
 #include "LightRay.h"
+#include "OpticalDevice.h"
 
 
 // Sets default values for this component's properties
-ULightRay::ULightRay()
-    : ColorParam(TEXT("Color"))
+ULightRay::ULightRay() :
+    ColorParam(TEXT("Color")),
+    ChildRay(nullptr),
+    LightRayMesh(nullptr),
+    NestedLevel(0)
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	bWantsBeginPlay = true;
 	PrimaryComponentTick.bCanEverTick = true;
 
-    // Add mesh...
-    LightRayMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LightRayMesh"));
-    LightRayMesh->SetupAttachment(this);
-    LightRayMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-
     static ConstructorHelpers::FObjectFinder<UStaticMesh> Mesh(TEXT("StaticMesh'/Game/Optica/lightbeam'"));
-    if (Mesh.Object)
-        LightRayMesh->SetStaticMesh(Mesh.Object);
-
+    MeshAsset = Mesh.Object;
     static ConstructorHelpers::FObjectFinder<UMaterial> Mat(TEXT("Material'/Game/Optica/LightRay'"));
-    if (Mat.Object) {
-        auto DynamicMat = UMaterialInstanceDynamic::Create(Mat.Object, LightRayMesh);
-        LightRayMesh->SetMaterial(0, DynamicMat);
-    }
+    MatAsset = Mat.Object;
 }
 
 void ULightRay::SetColor(FLinearColor color) {
-    LightRayMesh->SetVectorParameterValueOnMaterials(ColorParam, FVector(color.R, color.G, color.B));
+    if (LightRayMesh)
+        LightRayMesh->SetVectorParameterValueOnMaterials(ColorParam, FVector(color.R, color.G, color.B));
+    LightColor = color;
 }
 
 
@@ -39,8 +35,21 @@ void ULightRay::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
-	
+    if (LightRayMesh) return;
+
+    // Add the mesh and material
+    LightRayMesh = NewObject<UStaticMeshComponent>(this);
+    LightRayMesh->RegisterComponent();
+    bool attached = LightRayMesh->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
+    ensure(attached);
+
+    if (MeshAsset)
+        LightRayMesh->SetStaticMesh(MeshAsset);
+
+    if (MatAsset) {
+        auto DynamicMat = UMaterialInstanceDynamic::Create(MatAsset, LightRayMesh);
+        LightRayMesh->SetMaterial(0, DynamicMat);
+    }
 }
 
 
@@ -52,3 +61,78 @@ void ULightRay::TickComponent( float DeltaTime, ELevelTick TickType, FActorCompo
 	// ...
 }
 
+void ULightRay::CreateChildRay() {
+    if (ChildRay) return;
+    ChildRay = NewObject<ULightRay>(this);
+    ChildRay->NestedLevel = NestedLevel + 1;
+    ChildRay->RegisterComponent();
+    bool attached = ChildRay->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
+    ensure(attached);
+    ChildRay->SetVisibility(false, true);
+    ChildRay->SetColor(LightColor);
+}
+void ULightRay::DestroyChildRay() {
+    if (!ChildRay) return;
+
+    ChildRay->DestroyComponent();
+}
+
+void ULightRay::CastLight(FVector Start, FRotator Orientation) {
+    FCollisionQueryParams Params;
+    // Params.AddIgnoredActor(GetAttachmentRootActor());
+
+    SetWorldLocationAndRotationNoPhysics(Start, Orientation);
+
+    FHitResult Hit;
+    FVector End = Start + Orientation.Vector() * (100.0f * 100.0f);
+    bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECollisionChannel::ECC_WorldStatic, Params);
+
+    if (bHit) {
+        FVector Direction;
+        float Length;
+        (Hit.ImpactPoint - Start).ToDirectionAndLength(Direction, Length);
+        FRotator Orientation = Direction.ToOrientationRotator();
+
+        // TODO maybe the 0.2f's here could be thickness??
+        if (Length > 0.0f) {
+            FVector Scale(0.2f, Length / 100.0f, 0.2f);
+            SetRelativeScale3D(Scale);
+        }
+
+        SetRelativeRotation(Orientation);
+        SetVisibility(true, true);
+
+        // TODO reflect uhhhhhh yeah we will check type of hit actor at some point too
+        if (NestedLevel < 10) {
+            auto HitActor = Hit.Actor.Get();
+            AOpticalDevice* Device = HitActor ? Cast<AOpticalDevice>(HitActor) : nullptr;
+
+            if (Device) {
+                FVector2D Norm2D(Hit.ImpactNormal.Y, Hit.ImpactNormal.Z);
+                Norm2D.Normalize();
+                FVector2D Direction2D(Direction.Y, Direction.Z);
+                Direction2D.Normalize();
+
+                float RayAngle = FMath::Atan2(Direction2D.Y, Direction2D.X);
+                float NormAngle = FMath::Atan2(Norm2D.Y, Norm2D.X);
+                float NewRayAngle = (180.0f - RayAngle) + NormAngle * 2.0f;
+
+                FVector NewAngleDirection(0, 1.0f, 0);
+                NewAngleDirection.RotateAngleAxis(NewRayAngle, FVector(1.0f, 0.0f, 0.0f));
+                // now what ...
+
+                CreateChildRay();
+                ChildRay->SetColor(LightColor);
+                ChildRay->CastLight(Hit.ImpactPoint + Hit.ImpactNormal, NewAngleDirection.ToOrientationRotator());
+            }
+            else
+                DestroyChildRay();
+        }
+    }
+    else {
+        DestroyChildRay();
+        UE_LOG(LightSource, Warning, TEXT("YOOOOOOOOOOOOO WE DID NOT HIT"));
+        SetVisibility(false, true);
+        // TODO or maybe extend a long amount in this case?
+    }
+}

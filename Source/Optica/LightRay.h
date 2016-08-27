@@ -9,22 +9,34 @@
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class OPTICA_API ULightRay : public USceneComponent
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
-public:	
-	// Sets default values for this component's properties
-	ULightRay();
+public:    
+    // Sets default values for this component's properties
+    ULightRay();
 
-	// Called when the game starts
-	virtual void BeginPlay() override;
-	
-	// Called every frame
-	virtual void TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction ) override;
+    // Called when the game starts
+    virtual void BeginPlay() override;
+    
+    // Called every frame
+    virtual void TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction ) override;
 
     void SetColor(FLinearColor color);
+    void CastLight(FVector Start, FRotator Orientation);
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FLinearColor LightColor;
+    int NestedLevel;
 
 private:
+    void CreateChildRay();
+    void DestroyChildRay();
+
     class UStaticMeshComponent* LightRayMesh;
     FName ColorParam;
-	
+    ULightRay* ChildRay;
+
+    UStaticMesh* MeshAsset;
+    UMaterial* MatAsset;
+    
 };

@@ -6,32 +6,34 @@
 #include "Components/ArrowComponent.h"
 
 // Sets default values
-ALightSource::ALightSource() : Timer(0)
+ALightSource::ALightSource()
+    : Ray(nullptr)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
     SetActorEnableCollision(false);
 
     // This is just the root component, containing our position and orientation -- light rays will be added to this guy.
-    ArrowComponent = CreateDefaultSubobject<UArrowComponent>(TEXT("LightSourceArrow"), true);
+    ArrowComponent = CreateDefaultSubobject<UArrowComponent>(TEXT("LightSourceArrow"));
     RootComponent = ArrowComponent;
     ArrowComponent->SetArrowColor_New(LightColor);
     ArrowComponent->SetRelativeRotation(FVector(0, 1, 0).ToOrientationRotator());
     ArrowComponent->ArrowSize = 3.0f;
 
-    // TODO for testing, I will add a LightRay and see wtf I can do with it...
-    TestRay = CreateDefaultSubobject<ULightRay>(TEXT("TestLightRay"));
-    TestRay->SetRelativeScale3D(FVector(0,0,0));
-    TestRay->SetVisibility(false, true);
-    TestRay->SetColor(LightColor);
-    TestRay->SetupAttachment(RootComponent);
+    /* THIS WORKS! WTF
+    Ray = CreateDefaultSubobject<ULightRay>(TEXT("LightRay"));
+    Ray->NestedLevel = 0;
+    Ray->SetVisibility(false, true);
+    Ray->SetColor(LightColor);
+    Ray->SetupAttachment(RootComponent);
+    */
 }
 
 #ifdef WITH_EDITOR
 void ALightSource::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) {
     Super::PostEditChangeProperty(PropertyChangedEvent);
 
-    TestRay->SetColor(LightColor);
+    if (Ray) Ray->SetColor(LightColor);
     ArrowComponent->SetArrowColor_New(LightColor);
 }
 #endif
@@ -41,7 +43,7 @@ void ALightSource::BeginPlay()
 {
 	Super::BeginPlay();
 	
-    TestRay->SetColor(LightColor);
+    if (Ray) Ray->SetColor(LightColor);
     CastLight();
 }
 
@@ -50,42 +52,23 @@ void ALightSource::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 
-    Timer += DeltaTime;
-
     CastLight();
 }
 
+void ALightSource::InitializeRay() {
+    if (Ray) return;
+    Ray = NewObject<ULightRay>(this);
+    Ray->NestedLevel = 0;
+    Ray->RegisterComponent();
+    bool attached = Ray->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetIncludingScale);
+    ensure(attached);
+    Ray->SetVisibility(false, true);
+    Ray->SetColor(LightColor);
+}
+
 void ALightSource::CastLight() {
-    // TODO here's a raytrace oh god
-    FCollisionQueryParams Params;
-    Params.AddIgnoredActor(this);
+    InitializeRay();
 
-    FHitResult Hit;
-    FVector Start = GetActorLocation();
-    FVector End = Start + GetActorRotation().Vector() * (100.0f * 100.0f);
-    bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECollisionChannel::ECC_WorldStatic, Params);
-
-    if (bHit) {
-        FVector Direction;
-        float Length;
-        (Hit.ImpactPoint - Start).ToDirectionAndLength(Direction, Length);
-        FRotator Orientation = Direction.ToOrientationRotator();
-
-        // TODO maybe the 0.2f's here could be thickness??
-        if (Length > 0.0f) {
-            FVector Scale(0.2f, Length / 100.0f, 0.2f);
-            TestRay->SetRelativeScale3D(Scale);
-        }
-
-        TestRay->SetRelativeRotation(Orientation);
-        TestRay->SetVisibility(true, true);
-
-        // TODO reflect uhhhhhh yeah we will check type of hit actor at some point too
-        // float hitAngle = Orientation.Roll;
-    }
-    else {
-        UE_LOG(LightSource, Warning, TEXT("YOOOOOOOOOOOOO WE DID NOT HIT"));
-        TestRay->SetVisibility(false, true);
-        // TODO or maybe extend a long amount in this case?
-    }
+    check(Ray);
+    Ray->CastLight(GetActorLocation(), GetActorRotation());
 }

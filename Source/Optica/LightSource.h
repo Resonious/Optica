@@ -33,7 +33,7 @@ protected:
     class UArrowComponent* ArrowComponent;
 
 private:
-    float Timer;
-    class ULightRay* TestRay;
+    void InitializeRay();
+    class ULightRay* Ray;
 
 };
