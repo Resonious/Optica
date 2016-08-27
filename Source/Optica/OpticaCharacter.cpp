@@ -58,7 +58,7 @@ void AOpticaCharacter::SetupPlayerInputComponent(class UInputComponent* InputCom
 void AOpticaCharacter::MoveRight(float Value)
 {
 	// add movement in that direction
-	AddMovementInput(FVector(0.f,-1.f,0.f), Value);
+	AddMovementInput(FVector(0.f,1.f,0.f), Value);
 }
 
 void AOpticaCharacter::TouchStarted(const ETouchIndex::Type FingerIndex, const FVector Location)

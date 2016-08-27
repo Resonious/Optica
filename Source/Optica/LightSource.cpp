@@ -69,6 +69,7 @@ void ALightSource::CastLight() {
         FVector Direction;
         float Length;
         (Hit.ImpactPoint - Start).ToDirectionAndLength(Direction, Length);
+        FRotator Orientation = Direction.ToOrientationRotator();
 
         // TODO maybe the 0.2f's here could be thickness??
         if (Length > 0.0f) {
@@ -76,8 +77,11 @@ void ALightSource::CastLight() {
             TestRay->SetRelativeScale3D(Scale);
         }
 
-        TestRay->SetRelativeRotation(Direction.ToOrientationRotator());
+        TestRay->SetRelativeRotation(Orientation);
         TestRay->SetVisibility(true, true);
+
+        // TODO reflect uhhhhhh yeah we will check type of hit actor at some point too
+        // float hitAngle = Orientation.Roll;
     }
     else {
         UE_LOG(LightSource, Warning, TEXT("YOOOOOOOOOOOOO WE DID NOT HIT"));

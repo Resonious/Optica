@@ -23,7 +23,7 @@ public:
     virtual void CastLight();
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FLinearColor LightColor;
+    FLinearColor LightColor = FLinearColor(0,0,0);
 
 #ifdef WITH_EDITOR
     virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
