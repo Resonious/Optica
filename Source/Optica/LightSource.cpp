@@ -13,9 +13,9 @@ ALightSource::ALightSource() : Timer(0)
     SetActorEnableCollision(false);
 
     // This is just the root component, containing our position and orientation -- light rays will be added to this guy.
-    ArrowComponent = CreateDefaultSubobject<UArrowComponent>(TEXT("LightSourceArrow"));
+    ArrowComponent = CreateDefaultSubobject<UArrowComponent>(TEXT("LightSourceArrow"), true);
     RootComponent = ArrowComponent;
-    ArrowComponent->SetArrowColor_New(FColor::Silver);
+    ArrowComponent->SetArrowColor_New(LightColor);
     ArrowComponent->SetRelativeRotation(FVector(0, 1, 0).ToOrientationRotator());
     ArrowComponent->ArrowSize = 3.0f;
 
@@ -23,14 +23,25 @@ ALightSource::ALightSource() : Timer(0)
     TestRay = CreateDefaultSubobject<ULightRay>(TEXT("TestLightRay"));
     TestRay->SetRelativeScale3D(FVector(0,0,0));
     TestRay->SetVisibility(false, true);
+    TestRay->SetColor(LightColor);
     TestRay->SetupAttachment(RootComponent);
 }
+
+#ifdef WITH_EDITOR
+void ALightSource::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) {
+    Super::PostEditChangeProperty(PropertyChangedEvent);
+
+    TestRay->SetColor(LightColor);
+    ArrowComponent->SetArrowColor_New(LightColor);
+}
+#endif
 
 // Called when the game starts or when spawned
 void ALightSource::BeginPlay()
 {
 	Super::BeginPlay();
 	
+    TestRay->SetColor(LightColor);
     CastLight();
 }
 

@@ -6,6 +6,7 @@
 
 // Sets default values for this component's properties
 ULightRay::ULightRay()
+    : ColorParam(TEXT("Color"))
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
@@ -13,7 +14,7 @@ ULightRay::ULightRay()
 	PrimaryComponentTick.bCanEverTick = true;
 
     // Add mesh...
-    UStaticMeshComponent* LightRayMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LightRayMesh"));
+    LightRayMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LightRayMesh"));
     LightRayMesh->SetupAttachment(this);
     LightRayMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
@@ -26,6 +27,10 @@ ULightRay::ULightRay()
         auto DynamicMat = UMaterialInstanceDynamic::Create(Mat.Object, LightRayMesh);
         LightRayMesh->SetMaterial(0, DynamicMat);
     }
+}
+
+void ULightRay::SetColor(FLinearColor color) {
+    LightRayMesh->SetVectorParameterValueOnMaterials(ColorParam, FVector(color.R, color.G, color.B));
 }
 
 

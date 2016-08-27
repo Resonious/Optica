@@ -21,6 +21,10 @@ public:
 	// Called every frame
 	virtual void TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction ) override;
 
-		
+    void SetColor(FLinearColor color);
+
+private:
+    class UStaticMeshComponent* LightRayMesh;
+    FName ColorParam;
 	
 };
