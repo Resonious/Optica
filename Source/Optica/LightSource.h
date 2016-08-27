@@ -20,8 +20,13 @@ public:
 	// Called every frame
 	virtual void Tick( float DeltaSeconds ) override;
 
-protected:
-    // 
+    virtual void CastLight();
 
-	
+protected:
+    class UArrowComponent* ArrowComponent;
+
+private:
+    float Timer;
+    class ULightRay* TestRay;
+
 };

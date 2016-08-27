@@ -4,5 +4,7 @@
 #define __OPTICA_H__
 
 #include "EngineMinimal.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LightSource, Log, All);
 				   
 #endif

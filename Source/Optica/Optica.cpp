@@ -4,4 +4,5 @@
 
 
 IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, Optica, "Optica" );
+DEFINE_LOG_CATEGORY(LightSource);
  

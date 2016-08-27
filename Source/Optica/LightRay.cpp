@@ -15,6 +15,7 @@ ULightRay::ULightRay()
     // Add mesh...
     UStaticMeshComponent* LightRayMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LightRayMesh"));
     LightRayMesh->SetupAttachment(this);
+    LightRayMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
     static ConstructorHelpers::FObjectFinder<UStaticMesh> Mesh(TEXT("StaticMesh'/Game/Optica/lightbeam'"));
     if (Mesh.Object)
