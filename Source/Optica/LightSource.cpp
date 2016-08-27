@@ -4,7 +4,6 @@
 #include "LightSource.h"
 #include "LightRay.h"
 
-
 // Sets default values
 ALightSource::ALightSource()
 {
@@ -19,20 +18,8 @@ ALightSource::ALightSource()
     SphereComponent->SetCollisionProfileName(TEXT("WorldDynamic"));
 
     // TODO for testing, I will add a LightRay and see wtf I can do with it...
-    ULightRay* LightRay = CreateDefaultSubobject<ULightRay>(TEXT("TestLightRay"));
-    LightRay->SetupAttachment(SphereComponent);
-
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> Mesh(TEXT("StaticMesh'/Game/Optica/lightbeam'"));
-    ensure(Mesh.Object);
-    if (Mesh.Object)
-        LightRay->SetStaticMesh(Mesh.Object);
-
-    static ConstructorHelpers::FObjectFinder<UMaterial> Mat(TEXT("Material'/Game/Optica/LightRay'"));
-    ensure(Mat.Object);
-    if (Mat.Object) {
-        auto DynamicMat = UMaterialInstanceDynamic::Create(Mat.Object, LightRay);
-        LightRay->SetMaterial(0, DynamicMat);
-    }
+    ULightRay* TestRay = CreateDefaultSubobject<ULightRay>(TEXT("TestLightRay"));
+    TestRay->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
