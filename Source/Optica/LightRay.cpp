@@ -76,9 +76,16 @@ void ULightRay::CreateChildRay() {
 void ULightRay::DestroyChildRay() {
     if (!ChildRay) return;
 
-    ChildRay->LightRayMesh->DestroyComponent();
-    ChildRay->DestroyComponent();
+    ChildRay->SetVisibility(false, true);
+    /*
+    TArray<USceneComponent*> AllChildren;
+    ChildRay->GetChildrenComponents(true, AllChildren);
+    for (int i = AllChildren.Num() - 1; i >= 0; --i) {
+        AllChildren[i]->DestroyComponent();
+    }
+
     ChildRay = nullptr;
+    */
 }
 
 void ULightRay::CastChild(FVector Start, FRotator Orientation, AActor* Ignore) {
@@ -115,7 +122,7 @@ void ULightRay::CastLight(FVector Start, FRotator Orientation, AActor* Ignore) {
             LastHitActor = Hit.Actor.Get()->GetName() + TEXT(" :: ") + Hit.Component.Get()->GetName();
 
         // Don't interact with a device more than 10 times
-        if (NestedLevel < 10) {
+        if (NestedLevel < 20) {
             auto HitActor = Hit.Actor.Get();
             auto HitComponent = Hit.Component.Get();
 
