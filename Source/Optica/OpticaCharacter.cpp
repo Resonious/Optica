@@ -38,6 +38,8 @@ AOpticaCharacter::AOpticaCharacter()
 	GetCharacterMovement()->GroundFriction = 3.f;
 	GetCharacterMovement()->MaxWalkSpeed = 600.f;
 	GetCharacterMovement()->MaxFlySpeed = 600.f;
+    JumpMaxHoldTime = 0.7f;
+    JumpStopVelocity = 500.0f;
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
@@ -72,5 +74,11 @@ void AOpticaCharacter::TouchStarted(const ETouchIndex::Type FingerIndex, const F
 void AOpticaCharacter::TouchStopped(const ETouchIndex::Type FingerIndex, const FVector Location)
 {
 	StopJumping();
+}
+
+void AOpticaCharacter::StopJumping() {
+    Super::StopJumping();
+    if (GetCharacterMovement()->Velocity.Z > JumpStopVelocity)
+        GetCharacterMovement()->Velocity.Z = JumpStopVelocity;
 }
 

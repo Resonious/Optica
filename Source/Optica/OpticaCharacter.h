@@ -31,9 +31,13 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 	// End of APawn interface
 
+    virtual void StopJumping() override;
 
 public:
 	AOpticaCharacter();
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float JumpStopVelocity;
 
 	/** Returns SideViewCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetSideViewCameraComponent() const { return SideViewCameraComponent; }
