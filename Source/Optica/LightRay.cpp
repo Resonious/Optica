@@ -17,7 +17,7 @@ ULightRay::ULightRay() :
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	bWantsBeginPlay = true;
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 
     static ConstructorHelpers::FObjectFinder<UStaticMesh> Mesh(TEXT("StaticMesh'/Game/Optica/lightbeam'"));
     MeshAsset = Mesh.Object;
@@ -61,8 +61,6 @@ void ULightRay::BeginPlay()
 void ULightRay::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
 {
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
-
-	// ...
 }
 
 void ULightRay::CreateChildRay() {
@@ -124,7 +122,7 @@ void ULightRay::CastLight(FVector Start, FRotator Orientation, AActor* Ignore) {
         if (Hit.Actor.Get() && Hit.Component.Get())
             LastHitActor = Hit.Actor.Get()->GetName() + TEXT(" :: ") + Hit.Component.Get()->GetName();
 
-        // Don't interact with a device more than 10 times
+        // Don't interact with a device more than 20 times
         if (NestedLevel < 20) {
             auto HitActor = Hit.Actor.Get();
             auto HitComponent = Hit.Component.Get();

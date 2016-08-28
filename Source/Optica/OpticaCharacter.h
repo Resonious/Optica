@@ -27,6 +27,11 @@ protected:
 	/** Handle touch stop event. */
 	void TouchStopped(const ETouchIndex::Type FingerIndex, const FVector Location);
 
+    virtual void Tick(float DeltaTime) override;
+
+    virtual void PickUp();
+    virtual void Drop();
+
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 	// End of APawn interface
@@ -34,10 +39,20 @@ protected:
     virtual void StopJumping() override;
 
 public:
+    static const FName PICKUPABLE_TAG;
+
 	AOpticaCharacter();
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float JumpStopVelocity;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float PickupRange;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector PickupOffset;
+
+    AActor* PickedUpActor;
+    UPrimitiveComponent* PickupPhysics;
 
     bool IsGrounded() const;
 
@@ -45,4 +60,9 @@ public:
 	FORCEINLINE class UCameraComponent* GetSideViewCameraComponent() const { return SideViewCameraComponent; }
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class UPlatformerCameraArm* GetCameraBoom() const { return CameraBoom; }
+
+private:
+    // Stuff for picked up things
+    FVector PreviousPickupOrigin;
+    FVector PreviousDesiredLoc;
 };

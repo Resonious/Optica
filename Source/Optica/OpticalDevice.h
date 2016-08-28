@@ -20,5 +20,4 @@ public:
     FName ReceiverTag;
 
     virtual void AcceptLightRay(ULightRay* Ray, FVector& Direction, FHitResult& Hit);
-
 };
