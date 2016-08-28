@@ -14,7 +14,7 @@ class AOpticaCharacter : public ACharacter
 
 	/** Camera boom positioning the camera beside the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class USpringArmComponent* CameraBoom;
+	class UPlatformerCameraArm* CameraBoom;
 
 protected:
 
@@ -39,8 +39,10 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float JumpStopVelocity;
 
+    bool IsGrounded() const;
+
 	/** Returns SideViewCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetSideViewCameraComponent() const { return SideViewCameraComponent; }
 	/** Returns CameraBoom subobject **/
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	FORCEINLINE class UPlatformerCameraArm* GetCameraBoom() const { return CameraBoom; }
 };
