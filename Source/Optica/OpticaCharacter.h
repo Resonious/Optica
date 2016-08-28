@@ -47,9 +47,13 @@ public:
     float JumpStopVelocity;
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float PickupRange;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float PickupLagSpeed;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector PickupOffset;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector DropOffVelocity;
 
     AActor* PickedUpActor;
     UPrimitiveComponent* PickupPhysics;

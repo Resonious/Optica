@@ -47,6 +47,8 @@ AOpticaCharacter::AOpticaCharacter()
     PickupRange = 50.0f;
     PickedUpActor = nullptr;
     PickupPhysics = nullptr;
+	PickupLagSpeed = 20.f;
+    DropOffVelocity = FVector(100.0f, 0.0f, 75.0f);
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
@@ -90,8 +92,17 @@ void AOpticaCharacter::TouchStopped(const ETouchIndex::Type FingerIndex, const F
 
 void AOpticaCharacter::Drop() {
     if (PickupPhysics) {
-        PickupPhysics->SetSimulatePhysics(true);
+        PickupPhysics->SetEnableGravity(true);
+        PickupPhysics->BodyInstance.SetLinearVelocity(GetActorRotation().RotateVector(DropOffVelocity), false);
+
         PickupPhysics = nullptr;
+    }
+
+    for (auto& ActorComp : PickedUpActor->GetComponentsByClass(UPrimitiveComponent::StaticClass())) {
+        auto Comp = Cast<UPrimitiveComponent>(ActorComp);
+        if (!Comp) continue;
+
+        Comp->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
     }
 
     PickedUpActor = nullptr;
@@ -103,29 +114,34 @@ void AOpticaCharacter::PickUp() {
         return;
     }
 
+    // ==== Set up raytrace query =====
+
     FCollisionQueryParams Params;
     Params.AddIgnoredActor(this);
 
     FVector Start(GetActorLocation() + GetActorRotation().Vector() * 50.0f);
-    FVector End(Start + GetActorRotation().Vector() * PickupRange);
-
-    TArray<FHitResult> Hits;
-    bool bHit = GetWorld()->LineTraceMultiByChannel(Hits, Start, End, ECollisionChannel::ECC_WorldDynamic);
-
-    if (!bHit) {
-        // TODO perhaps play a "didn't work" sound
-        UE_LOG(LightSource, Warning, TEXT("No hit objects at all"));
-        return;
-    }
+    Start.Z -= this->BaseEyeHeight;
 
     AActor* Pickup = nullptr;
-    for (auto& Hit : Hits) {
-        auto HitActor = Hit.Actor.Get();
-        if (!HitActor) continue;
-        if (!HitActor->ActorHasTag(PICKUPABLE_TAG)) continue;
+    const struct { FVector Start, End; } Rays[2] = {
+        { Start, Start + GetActorRotation().Vector() * PickupRange },
+        { Start, Start + FVector(0.f, 0.f, -PickupRange) }
+    };
 
-        Pickup = HitActor;
-        break;
+    for (int i = 0; i < 2; ++i) {
+        TArray<FHitResult> Hits;
+        GetWorld()->LineTraceMultiByChannel(Hits, Rays[i].Start, Rays[i].End, ECollisionChannel::ECC_WorldDynamic);
+
+        // ==== Find pickup-able object within raytrace hits =====
+
+        for (auto& Hit : Hits) {
+            auto HitActor = Hit.Actor.Get();
+            if (!HitActor) continue;
+            if (!HitActor->ActorHasTag(PICKUPABLE_TAG)) continue;
+
+            Pickup = HitActor;
+            goto actor_picked_up;
+        }
     }
 
     if (!Pickup) {
@@ -134,18 +150,25 @@ void AOpticaCharacter::PickUp() {
         return;
     }
 
+    // ==== Actor picked up ====
+actor_picked_up:;
+
     UE_LOG(LightSource, Warning, TEXT("PICKED UP"));
     PickedUpActor = Pickup;
+
+    PreviousPickupOrigin = Pickup->GetActorLocation();
+    PreviousDesiredLoc = Pickup->GetActorLocation();
 
     for (auto& ActorComp : Pickup->GetComponentsByClass(UPrimitiveComponent::StaticClass())) {
         auto Comp = Cast<UPrimitiveComponent>(ActorComp);
         if (!Comp) continue;
 
-        if (Comp->IsSimulatingPhysics()) {
+        if (!PickupPhysics && Comp->IsGravityEnabled()) {
             PickupPhysics = Comp;
-            Comp->SetSimulatePhysics(false);
-            break;
+            Comp->SetEnableGravity(false);
         }
+
+        Comp->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
     }
 }
 
@@ -164,7 +187,6 @@ void AOpticaCharacter::Tick(float DeltaTime) {
 	FVector DesiredLoc = PickupOrigin;
 	const float PickupLagMaxTimeStep = 1.f / 60.f;
 	const float InversePickupLagMaxTimeStep = (1.f / PickupLagMaxTimeStep);
-	const float PickupLagSpeed = 10.f;
 
     const FVector PickupMovementStep = (PickupOrigin - PreviousPickupOrigin) * (PickupLagMaxTimeStep / DeltaTime);			
     FVector LerpTarget = PreviousPickupOrigin;
