@@ -34,12 +34,15 @@ public:
     FString LastHitActor;
 
 private:
+    friend class ALightSource;
+
     void CreateChildRay();
     void DestroyChildRay();
 
     class UStaticMeshComponent* LightRayMesh;
     FName ColorParam;
     ULightRay* ChildRay;
+    class ALightSource* Source;
 
     UStaticMesh* MeshAsset;
     UMaterial* MatAsset;

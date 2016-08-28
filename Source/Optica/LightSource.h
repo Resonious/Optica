@@ -25,6 +25,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FLinearColor LightColor = FLinearColor(0,0,0);
 
+    UFUNCTION(BlueprintImplementableEvent, Category = "LightSource")
+    void HitCharacter(class ACharacter* character, FRotator orientation);
+
 #ifdef WITH_EDITORONLY_DATA
     virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif

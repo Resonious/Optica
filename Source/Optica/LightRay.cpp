@@ -2,7 +2,9 @@
 
 #include "Optica.h"
 #include "LightRay.h"
+#include "LightSource.h"
 #include "OpticalDevice.h"
+#include "GameFramework/Character.h"
 
 
 // Sets default values for this component's properties
@@ -67,6 +69,7 @@ void ULightRay::CreateChildRay() {
     if (ChildRay) return;
     ChildRay = NewObject<ULightRay>(this);
     ChildRay->NestedLevel = NestedLevel + 1;
+    ChildRay->Source = Source;
     ChildRay->RegisterComponent();
     bool attached = ChildRay->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
     ensure(attached);
@@ -135,6 +138,11 @@ void ULightRay::CastLight(FVector Start, FRotator Orientation, AActor* Ignore) {
                 Device->AcceptLightRay(this, Direction, Hit);
             else
                 DestroyChildRay();
+
+            // Fire HitCharacter event
+            ACharacter* Character = HitActor ? Cast<ACharacter>(HitActor) : nullptr;
+            if (Character)
+                Source->HitCharacter(Character, Direction.ToOrientationRotator());
         }
     }
     else {

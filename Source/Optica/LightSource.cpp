@@ -52,6 +52,7 @@ void ALightSource::InitializeRay() {
     if (Ray) return;
     Ray = NewObject<ULightRay>(this);
     Ray->NestedLevel = 0;
+    Ray->Source = this;
     Ray->RegisterComponent();
     bool attached = Ray->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetIncludingScale);
     ensure(attached);
@@ -65,3 +66,4 @@ void ALightSource::CastLight() {
     check(Ray);
     Ray->CastLight(GetActorLocation(), GetActorRotation());
 }
+
