@@ -27,7 +27,11 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FLinearColor LightColor;
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
     int NestedLevel;
+
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+    FString LastHitActor;
 
 private:
     void CreateChildRay();

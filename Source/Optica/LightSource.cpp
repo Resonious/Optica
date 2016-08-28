@@ -17,8 +17,9 @@ ALightSource::ALightSource()
     ArrowComponent = CreateDefaultSubobject<UArrowComponent>(TEXT("LightSourceArrow"));
     RootComponent = ArrowComponent;
     ArrowComponent->SetArrowColor_New(LightColor);
-    ArrowComponent->SetRelativeRotation(FVector(0, 1, 0).ToOrientationRotator());
+    ArrowComponent->SetWorldRotation(FVector(0, 1, 0).ToOrientationRotator());
     ArrowComponent->ArrowSize = 3.0f;
+    ArrowComponent->SetSimulatePhysics(false);
 }
 
 #ifdef WITH_EDITORONLY_DATA

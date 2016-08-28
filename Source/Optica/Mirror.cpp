@@ -40,8 +40,8 @@ void AMirror::AcceptLightRay(ULightRay* Ray, FVector& Direction, FHitResult& Hit
 
     float Sin, Cos;
     FMath::SinCos(&Sin, &Cos, NewRayAngle * PI / 180.0f);
-    FVector NewAngleDirection(0.0f, Cos, Sin);
-    FQuat NewAngleQuat = FQuat::FindBetweenNormals(FVector(0.0f, 1.0f, 0.0f), NewAngleDirection);
+    FVector NewAngleDirection(0.0f, -Cos, -Sin);
+    // FQuat NewAngleQuat = FQuat::FindBetweenNormals(FVector(1.0f, 0.0f, 0.0f), NewAngleDirection);
 
-    Ray->CastChild(Hit.ImpactPoint, NewAngleQuat.Rotator(), Hit.Actor.Get());
+    Ray->CastChild(Hit.ImpactPoint, NewAngleDirection.ToOrientationRotator(), Hit.Actor.Get());
 }

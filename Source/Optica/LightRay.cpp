@@ -103,12 +103,14 @@ void ULightRay::CastLight(FVector Start, FRotator Orientation, AActor* Ignore) {
 
         // TODO maybe the 0.2f's here could be thickness??
         if (Length > 0.0f) {
-            FVector Scale(0.2f, Length / 100.0f, 0.2f);
+            FVector Scale(Length / 100.0f, 0.2f, 0.2f);
             LightRayMesh->SetRelativeScale3D(Scale);
         }
 
-        LightRayMesh->SetRelativeRotation(Direction.ToOrientationRotator());
+        LightRayMesh->SetWorldLocationAndRotation(Start, Direction.ToOrientationRotator());
         SetVisibility(true, true);
+
+        LastHitActor = Hit.Actor.Get()->GetName();
 
         // Don't interact with a device more than 10 times
         if (NestedLevel < 10) {
