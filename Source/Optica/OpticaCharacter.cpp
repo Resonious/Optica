@@ -22,6 +22,7 @@ AOpticaCharacter::AOpticaCharacter()
 	CameraBoom->TargetArmLength = 432.f;
 	CameraBoom->SocketOffset = FVector(0.f,0.f,160.f);
 	CameraBoom->RelativeRotation = FRotator(0.f,0.f,0.f);
+    CameraBoom->bEnableCameraLag = true;
     CameraBoom->CharacterToWatch = this;
 
 	// Create a camera and attach to boom
@@ -47,7 +48,7 @@ AOpticaCharacter::AOpticaCharacter()
 }
 
 bool AOpticaCharacter::IsGrounded() const {
-    return FMath::Abs(GetCharacterMovement()->Velocity.Z) < KINDA_SMALL_NUMBER;
+    return FMath::Abs(GetCharacterMovement()->Velocity.Z) < KINDA_SMALL_NUMBER * 2.0f && !IsJumping();
 }
 
 //////////////////////////////////////////////////////////////////////////

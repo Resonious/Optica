@@ -2,6 +2,7 @@
 
 #include "Optica.h"
 #include "PlatformerCameraArm.h"
+#include "GameFramework/Character.h"
 #include "OpticaCharacter.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -95,6 +96,13 @@ void UPlatformerCameraArm::UpdateDesiredArmLocation(bool bDoTrace, bool bDoLocat
 	FVector ArmOrigin = GetComponentLocation() + TargetOffset;
 	// We lag the target, not the actual camera position, so rotating the camera around does not have lag
 	FVector DesiredLoc = ArmOrigin;
+
+    float CharacterDistanceDown = PreviousDesiredLoc.Z - ArmOrigin.Z;
+    bool bDontTrackZAxis = CharacterToWatch && !CharacterToWatch->IsGrounded() && CharacterDistanceDown < 0.0f;
+
+    if (bDontTrackZAxis)
+        DesiredLoc.Z = PreviousDesiredLoc.Z;
+
 	if (bDoLocationLag)
 	{
 		if (bUseCameraLagSubstepping && DeltaTime > CameraLagMaxTimeStep && CameraLagSpeed > 0.f)
@@ -133,15 +141,13 @@ void UPlatformerCameraArm::UpdateDesiredArmLocation(bool bDoTrace, bool bDoLocat
 	PreviousArmOrigin = ArmOrigin;
 	PreviousDesiredLoc = DesiredLoc;
 
-    FVector ResultLoc(DesiredLoc);
-
-    if (CharacterToWatch && CharacterToWatch->IsGrounded())
-        ResultLoc.Z = ArmOrigin.Z;
-
 	// Now offset camera position back along our rotation
-	ResultLoc -= DesiredRot.Vector() * TargetArmLength;
+	DesiredLoc -= DesiredRot.Vector() * TargetArmLength;
 	// Add socket offset in local space
-	ResultLoc += FRotationMatrix(DesiredRot).TransformVector(SocketOffset);
+	DesiredLoc += FRotationMatrix(DesiredRot).TransformVector(SocketOffset);
+
+	// Do a sweep to ensure we are not penetrating the world
+	FVector ResultLoc(DesiredLoc);
 
 	// Form a transform for new world transform for camera
 	FTransform WorldCamTM(DesiredRot, ResultLoc);

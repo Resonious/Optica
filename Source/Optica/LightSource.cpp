@@ -21,7 +21,7 @@ ALightSource::ALightSource()
     ArrowComponent->ArrowSize = 3.0f;
 }
 
-#ifdef WITH_EDITOR
+#ifdef WITH_EDITORONLY_DATA
 void ALightSource::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) {
     Super::PostEditChangeProperty(PropertyChangedEvent);
 

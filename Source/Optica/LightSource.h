@@ -25,7 +25,7 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FLinearColor LightColor = FLinearColor(0,0,0);
 
-#ifdef WITH_EDITOR
+#ifdef WITH_EDITORONLY_DATA
     virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
 
