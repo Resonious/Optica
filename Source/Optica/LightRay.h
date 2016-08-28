@@ -23,6 +23,7 @@ public:
 
     void SetColor(FLinearColor color);
     void CastLight(FVector Start, FRotator Orientation, AActor* Ignore = nullptr);
+    void CastChild(FVector Start, FRotator Orientation, AActor* Ignore = nullptr);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FLinearColor LightColor;

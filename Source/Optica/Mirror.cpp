@@ -26,5 +26,22 @@ void AMirror::Tick( float DeltaTime )
 
 }
 
-void AMirror::AcceptLightRay(ULightRay* ray) {
+void AMirror::AcceptLightRay(ULightRay* Ray, FVector& Direction, FHitResult& Hit) {
+    FVector2D Norm2D(Hit.ImpactNormal.Y, Hit.ImpactNormal.Z);
+    Norm2D.Normalize();
+    FVector2D Direction2D(Direction.Y, Direction.Z);
+    Direction2D.Normalize();
+
+    float RayAngle  = FMath::Atan2(Direction2D.Y, Direction2D.X) * 180.0f / PI;
+    float NormAngle = FMath::Atan2(Norm2D.Y, Norm2D.X) * 180.0f / PI + 180.0f;
+    float NewRayAngle = NormAngle + (NormAngle - RayAngle);
+    if (NewRayAngle >= 360.0f)
+        NewRayAngle -= FMath::FloorToFloat(NewRayAngle / 360.0f) * 360.0f;
+
+    float Sin, Cos;
+    FMath::SinCos(&Sin, &Cos, NewRayAngle * PI / 180.0f);
+    FVector NewAngleDirection(0.0f, Cos, Sin);
+    FQuat NewAngleQuat = FQuat::FindBetweenNormals(FVector(0.0f, 1.0f, 0.0f), NewAngleDirection);
+
+    Ray->CastChild(Hit.ImpactPoint, NewAngleQuat.Rotator(), Hit.Actor.Get());
 }

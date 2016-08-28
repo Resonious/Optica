@@ -81,6 +81,11 @@ void ULightRay::DestroyChildRay() {
     ChildRay = nullptr;
 }
 
+void ULightRay::CastChild(FVector Start, FRotator Orientation, AActor* Ignore) {
+    CreateChildRay();
+    ChildRay->CastLight(Start, Orientation, Ignore);
+}
+
 void ULightRay::CastLight(FVector Start, FRotator Orientation, AActor* Ignore) {
     FCollisionQueryParams Params;
     Params.AddIgnoredActor(Ignore);
@@ -95,7 +100,6 @@ void ULightRay::CastLight(FVector Start, FRotator Orientation, AActor* Ignore) {
         FVector Direction;
         float Length;
         (Hit.ImpactPoint - Start).ToDirectionAndLength(Direction, Length);
-        FRotator Orientation = Direction.ToOrientationRotator();
 
         // TODO maybe the 0.2f's here could be thickness??
         if (Length > 0.0f) {
@@ -103,37 +107,16 @@ void ULightRay::CastLight(FVector Start, FRotator Orientation, AActor* Ignore) {
             LightRayMesh->SetRelativeScale3D(Scale);
         }
 
-        LightRayMesh->SetRelativeRotation(Orientation);
+        LightRayMesh->SetRelativeRotation(Direction.ToOrientationRotator());
         SetVisibility(true, true);
 
-        // TODO reflect uhhhhhh yeah we will check type of hit actor at some point too
+        // Don't interact with a device more than 10 times
         if (NestedLevel < 10) {
             auto HitActor = Hit.Actor.Get();
             AOpticalDevice* Device = HitActor ? Cast<AOpticalDevice>(HitActor) : nullptr;
 
-            if (Device) {
-                // TODO the following logic should be within the Device (currently just trying to get it to work)
-
-                FVector2D Norm2D(Hit.ImpactNormal.Y, Hit.ImpactNormal.Z);
-                Norm2D.Normalize();
-                FVector2D Direction2D(Direction.Y, Direction.Z);
-                Direction2D.Normalize();
-
-                float RayAngle  = FMath::Atan2(Direction2D.Y, Direction2D.X) * 180.0f / PI;
-                float NormAngle = FMath::Atan2(Norm2D.Y, Norm2D.X) * 180.0f / PI + 180.0f;
-                float NewRayAngle = NormAngle + (NormAngle - RayAngle);
-                if (NewRayAngle >= 360.0f)
-                    NewRayAngle -= FMath::FloorToFloat(NewRayAngle / 360.0f) * 360.0f;
-
-                float Sin, Cos;
-                FMath::SinCos(&Sin, &Cos, NewRayAngle * PI / 180.0f);
-                FVector NewAngleDirection(0.0f, Cos, Sin);
-                FQuat NewAngleQuat = FQuat::FindBetweenNormals(FVector(0.0f, 1.0f, 0.0f), NewAngleDirection);
-
-                CreateChildRay();
-                ChildRay->SetColor(LightColor);
-                ChildRay->CastLight(Hit.ImpactPoint, NewAngleQuat.Rotator(), HitActor);
-            }
+            if (Device)
+                Device->AcceptLightRay(this, Direction, Hit);
             else
                 DestroyChildRay();
         }

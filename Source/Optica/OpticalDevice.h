@@ -15,6 +15,6 @@ public:
 	// Sets default values for this actor's properties
 	AOpticalDevice();
 
-    virtual void AcceptLightRay(ULightRay* ray);
+    virtual void AcceptLightRay(ULightRay* Ray, FVector& Direction, FHitResult& Hit);
 
 };

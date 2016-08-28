@@ -12,6 +12,6 @@ AOpticalDevice::AOpticalDevice()
 
 }
 
-void AOpticalDevice::AcceptLightRay(ULightRay* ray) {
+void AOpticalDevice::AcceptLightRay(ULightRay* Ray, FVector& Direction, FHitResult& Hit) {
     UE_LOG(LightSource, Warning, TEXT("Undefined optical device accepting a ray??? Or you called super don't do that."));
 }
