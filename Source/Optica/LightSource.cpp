@@ -19,14 +19,6 @@ ALightSource::ALightSource()
     ArrowComponent->SetArrowColor_New(LightColor);
     ArrowComponent->SetRelativeRotation(FVector(0, 1, 0).ToOrientationRotator());
     ArrowComponent->ArrowSize = 3.0f;
-
-    /* THIS WORKS! WTF
-    Ray = CreateDefaultSubobject<ULightRay>(TEXT("LightRay"));
-    Ray->NestedLevel = 0;
-    Ray->SetVisibility(false, true);
-    Ray->SetColor(LightColor);
-    Ray->SetupAttachment(RootComponent);
-    */
 }
 
 #ifdef WITH_EDITOR
