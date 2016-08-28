@@ -94,7 +94,7 @@ void ULightRay::CastLight(FVector Start, FRotator Orientation, AActor* Ignore) {
 
     FHitResult Hit;
     FVector End = Start + Orientation.Vector() * (100.0f * 100.0f);
-    bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECollisionChannel::ECC_WorldStatic, Params);
+    bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECollisionChannel::ECC_WorldDynamic, Params);
 
     if (bHit) {
         FVector Direction;
@@ -110,14 +110,21 @@ void ULightRay::CastLight(FVector Start, FRotator Orientation, AActor* Ignore) {
         LightRayMesh->SetWorldLocationAndRotation(Start, Direction.ToOrientationRotator());
         SetVisibility(true, true);
 
-        LastHitActor = Hit.Actor.Get()->GetName();
+        // TODO DEBUGGING HERE
+        if (Hit.Actor.Get() && Hit.Component.Get())
+            LastHitActor = Hit.Actor.Get()->GetName() + TEXT(" :: ") + Hit.Component.Get()->GetName();
 
         // Don't interact with a device more than 10 times
         if (NestedLevel < 10) {
             auto HitActor = Hit.Actor.Get();
-            AOpticalDevice* Device = HitActor ? Cast<AOpticalDevice>(HitActor) : nullptr;
+            auto HitComponent = Hit.Component.Get();
 
-            if (Device)
+            AOpticalDevice* Device = (HitActor && HitComponent) ? Cast<AOpticalDevice>(HitActor) : nullptr;
+
+            auto _Name = HitComponent->GetName();
+            auto _Tags = &HitComponent->ComponentTags;
+
+            if (Device && HitComponent->ComponentHasTag(Device->ReceiverTag))
                 Device->AcceptLightRay(this, Direction, Hit);
             else
                 DestroyChildRay();
