@@ -69,4 +69,11 @@ private:
     // Stuff for picked up things
     FVector PreviousPickupOrigin;
     FVector PreviousDesiredLoc;
+
+    float LastMoveDirection;
+    float MoveDirection;
+    float FloatTimer;
+
+    void FloatPickup(float DeltaTime);
+    void OrientMesh(float DeltaTime);
 };

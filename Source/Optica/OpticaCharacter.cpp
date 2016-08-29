@@ -6,7 +6,8 @@
 
 const FName AOpticaCharacter::PICKUPABLE_TAG(TEXT("PickupAble"));
 
-AOpticaCharacter::AOpticaCharacter()
+AOpticaCharacter::AOpticaCharacter() :
+    MoveDirection(0.0f), LastMoveDirection(0.0f), FloatTimer(0.0f)
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -76,6 +77,9 @@ void AOpticaCharacter::SetupPlayerInputComponent(class UInputComponent* InputCom
 void AOpticaCharacter::MoveRight(float Value)
 {
 	// add movement in that direction
+    if (Value != 0.0f)
+        LastMoveDirection = MoveDirection;
+    MoveDirection = Value;
 	AddMovementInput(FVector(0.f,1.f,0.f), Value);
 }
 
@@ -178,11 +182,9 @@ void AOpticaCharacter::StopJumping() {
         GetCharacterMovement()->Velocity.Z = JumpStopVelocity;
 }
 
-void AOpticaCharacter::Tick(float DeltaTime) {
-    Super::Tick(DeltaTime);
+void AOpticaCharacter::FloatPickup(float DeltaTime) {
     if (!PickedUpActor) return;
 
-    // PickedUpActor->SetActorLocation(GetActorLocation() + PickupOffset);
     FVector PickupOrigin = GetActorLocation() + GetActorRotation().RotateVector(PickupOffset);
 	FVector DesiredLoc = PickupOrigin;
 	const float PickupLagMaxTimeStep = 1.f / 60.f;
@@ -202,5 +204,31 @@ void AOpticaCharacter::Tick(float DeltaTime) {
     }
 
     PickedUpActor->SetActorLocation(DesiredLoc);
+}
+
+void AOpticaCharacter::OrientMesh(float DeltaTime) {
+    FloatTimer += DeltaTime;
+    if (FloatTimer >= 1000.0f) FloatTimer -= 1000.0f;
+
+    auto rot = GetActorRotation();
+    if (MoveDirection > 0.0f)
+        rot = FVector(-0.3f, 0.6f, -0.1f).ToOrientationRotator();
+    else if (MoveDirection < 0.0f)
+        rot = FVector(-0.3f, -0.6f, -0.1f).ToOrientationRotator();
+    else {
+        if (LastMoveDirection > 0.0f)
+            rot = FVector(-0.35f, 0.65f, 0.0f).ToOrientationRotator();
+        else if (LastMoveDirection < 0.0f)
+            rot = FVector(-0.35f, -0.65f, 0.0f).ToOrientationRotator();
+    }
+
+    SetActorRotation(rot);
+    GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -97.0f + FMath::Sin(FloatTimer * 2.0f) * 3.4f));
+}
+
+void AOpticaCharacter::Tick(float DeltaTime) {
+    Super::Tick(DeltaTime);
+    FloatPickup(DeltaTime);
+    OrientMesh(DeltaTime);
 }
 
