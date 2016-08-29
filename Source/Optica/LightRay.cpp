@@ -54,6 +54,17 @@ void ULightRay::BeginPlay()
     }
 
     LightRayMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+    /* TODO uhhh probably not
+    USpotLightComponent* SpotLight = NewObject<USpotLightComponent>(this);
+    SpotLight->RegisterComponent();
+    attached = SpotLight->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
+    ensure(attached);
+    SpotLight->SetIntensity(35000.0f);
+    SpotLight->SetInnerConeAngle(5.0f);
+    SpotLight->SetOuterConeAngle(10.0f);
+    SpotLight->SetSourceRadius(3.0f);
+    */
 }
 
 

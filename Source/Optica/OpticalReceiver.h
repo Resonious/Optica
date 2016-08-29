@@ -36,6 +36,11 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<FLinearColor> RequiredColors;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UStaticMeshComponent* Base;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UStaticMeshComponent* Bulb;
+
 private:
     static const FVector IndicatorSpots[14];
     static const FVector IndicatorScale;

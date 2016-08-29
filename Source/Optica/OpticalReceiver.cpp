@@ -35,11 +35,11 @@ AOpticalReceiver::AOpticalReceiver() :
 
     ReceiverTag = ReceiverTagName;
 
-    UStaticMeshComponent* Base = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ReceiverBase"));;
+    Base = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ReceiverBase"));;
     RootComponent = Base;
     Base->SetSimulatePhysics(false);
 
-    UStaticMeshComponent* Bulb = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ReceiverBulb"));;
+    Bulb = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ReceiverBulb"));;
     Bulb->SetupAttachment(Base);
     Bulb->SetSimulatePhysics(false);
     Bulb->ComponentTags.Add(ReceiverTagName);
@@ -51,7 +51,8 @@ AOpticalReceiver::AOpticalReceiver() :
         Base->SetStaticMesh(Mesh.Object);
 
     // Material
-    static ConstructorHelpers::FObjectFinder<UMaterial> Mat(TEXT("Material'/Game/Optica/Platform'"));
+    static ConstructorHelpers::FObjectFinder<UMaterial> Mat(TEXT("Material'/Game/Optica/Platform.Platform'"));
+    ensure(Mat.Object);
     if (Mat.Object) {
         auto DynamicMat = UMaterialInstanceDynamic::Create(Mat.Object, Base);
         Base->SetMaterial(0, DynamicMat);
@@ -64,7 +65,8 @@ AOpticalReceiver::AOpticalReceiver() :
         Bulb->SetStaticMesh(RMesh.Object);
 
     // Material
-    static ConstructorHelpers::FObjectFinder<UMaterial> RMat(TEXT("Material'/Game/Optica/Mirror'"));
+    static ConstructorHelpers::FObjectFinder<UMaterial> RMat(TEXT("Material'/Game/Optica/Mirror.Mirror'"));
+    ensure(Mat.Object);
     if (RMat.Object) {
         auto DynamicMat = UMaterialInstanceDynamic::Create(RMat.Object, Bulb);
         Bulb->SetMaterial(0, DynamicMat);
