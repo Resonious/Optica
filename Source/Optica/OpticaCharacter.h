@@ -65,6 +65,12 @@ public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class UPlatformerCameraArm* GetCameraBoom() const { return CameraBoom; }
 
+    UFUNCTION(BlueprintImplementableEvent, Category = "LightSource")
+    void SetLevelRequest(FName UnloadLevel, FName LoadLevel);
+
+    UFUNCTION(BlueprintCallable, Category = "LightSource")
+    void SetLevel(FName UnloadLevel, FName LoadLevel);
+
 private:
     // Stuff for picked up things
     FVector PreviousPickupOrigin;

@@ -140,7 +140,11 @@ void AOpticaCharacter::PickUp() {
 
         for (auto& Hit : Hits) {
             auto HitActor = Hit.Actor.Get();
-            if (!HitActor) continue;
+            if (!HitActor) {
+                auto HitComp = Hit.Component.Get();
+                if (!HitComp) continue;
+                HitActor = HitComp->GetOwner();
+            }
             if (!HitActor->ActorHasTag(PICKUPABLE_TAG)) continue;
 
             Pickup = HitActor;
@@ -230,5 +234,9 @@ void AOpticaCharacter::Tick(float DeltaTime) {
     Super::Tick(DeltaTime);
     FloatPickup(DeltaTime);
     OrientMesh(DeltaTime);
+}
+
+void AOpticaCharacter::SetLevel(FName UnloadLevel, FName LoadLevel) {
+    SetLevelRequest(UnloadLevel, LoadLevel);
 }
 
