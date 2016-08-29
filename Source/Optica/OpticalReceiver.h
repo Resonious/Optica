@@ -28,7 +28,7 @@ public:
 	// Called every frame
 	virtual void Tick( float DeltaSeconds ) override;
 
-    virtual void AcceptLightRay(ULightRay* Ray, FVector& Direction, FHitResult& Hit);
+    virtual void AcceptLightRay(ULightRay* Ray, FVector& Direction, FHitResult& Hit) override;
 
     UFUNCTION(BlueprintImplementableEvent, Category = "OpticalReceiver")
     void Satisfied();

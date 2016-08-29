@@ -2,6 +2,7 @@
 
 #include "Optica.h"
 #include "OpticalReceiver.h"
+#include "Engine/Level.h"
 
 const FVector AOpticalReceiver::IndicatorSpots[14] = {
     FVector(-55.f,   0.f, 25.f),
