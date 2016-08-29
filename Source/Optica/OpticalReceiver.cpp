@@ -25,7 +25,8 @@ const FName AOpticalReceiver::ColorParam(TEXT("Color"));
 const FName AOpticalReceiver::ReceiverTagName(TEXT("ORR"));
 
 // Sets default values
-AOpticalReceiver::AOpticalReceiver()
+AOpticalReceiver::AOpticalReceiver() :
+    bHasBeenSatisfied(false)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -86,7 +87,32 @@ void AOpticalReceiver::BeginPlay()
     ReceiverTag = ReceiverTagName;
 	PrimaryActorTick.bCanEverTick = true;
     PrimaryActorTick.TickGroup = ETickingGroup::TG_PrePhysics;
+
 	Super::BeginPlay();
+
+    // NOTE The mesh components for the bulbs never get destroyed (by us directly, that is)
+
+    Colors.Reserve(RequiredColors.Num());
+
+    int IndicatorSpot = 0;
+    for (auto& Color : RequiredColors) {
+        UStaticMeshComponent* Indicator = NewObject<UStaticMeshComponent>(this);
+        Indicator->RegisterComponent();
+        bool attached = Indicator->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetIncludingScale);
+        ensure(attached);
+
+        Indicator->SetStaticMesh(IndicatorMesh);
+
+        auto DynamicMat = UMaterialInstanceDynamic::Create(IndicatorMat, Indicator);
+        Indicator->SetMaterial(0, DynamicMat);
+        Indicator->SetVectorParameterValueOnMaterials(ColorParam, FVector(Color.R, Color.G, Color.B));
+
+        Indicator->SetRelativeScale3D(IndicatorScale);
+        if (IndicatorSpot < 14)
+            Indicator->SetRelativeLocation(IndicatorSpots[IndicatorSpot++]);
+
+        Colors.Add({ Color, Indicator, 0, false });
+    }
 }
 
 // Called every frame
@@ -94,6 +120,21 @@ void AOpticalReceiver::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 
+    // Don't update satisfaction if we've already been completely satisfied
+    if (bHasBeenSatisfied)
+        return;
+    else {
+        bool bAllSatisfied = true;
+        for (auto& Color : Colors)
+            if (!Color.Satisfied) { bAllSatisfied = false; break; }
+
+        if (bAllSatisfied) {
+            Satisfied();
+            bHasBeenSatisfied = true;
+        }
+    }
+
+    // Unsatisfy colors that didn't hit us 2 frames ago
     for (auto& Color : Colors) {
         Color.bSatisfied = false;
         if (Color.Satisfied <= 0)
@@ -117,32 +158,5 @@ void AOpticalReceiver::AcceptLightRay(ULightRay* Ray, FVector& Direction, FHitRe
             Color.bSatisfied = true;
             break;
         }
-    }
-}
-
-void AOpticalReceiver::SetRequiredColors(TArray<FLinearColor> RequiredColors) {
-    // For now going to assume this only ever gets called once on one instance of AOpticalReceiver.
-    // (The mesh components never get destroyed)
-
-    Colors.Reserve(RequiredColors.Num());
-
-    int IndicatorSpot = 0;
-    for (auto& Color : RequiredColors) {
-        UStaticMeshComponent* Indicator = NewObject<UStaticMeshComponent>(this);
-        Indicator->RegisterComponent();
-        bool attached = Indicator->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetIncludingScale);
-        ensure(attached);
-
-        Indicator->SetStaticMesh(IndicatorMesh);
-
-        auto DynamicMat = UMaterialInstanceDynamic::Create(IndicatorMat, Indicator);
-        Indicator->SetMaterial(0, DynamicMat);
-        Indicator->SetVectorParameterValueOnMaterials(ColorParam, FVector(Color.R, Color.G, Color.B));
-
-        Indicator->SetRelativeScale3D(IndicatorScale);
-        if (IndicatorSpot < 14)
-            Indicator->SetRelativeLocation(IndicatorSpots[IndicatorSpot++]);
-
-        Colors.Add({ Color, Indicator, 0, false });
     }
 }

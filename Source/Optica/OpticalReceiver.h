@@ -30,8 +30,11 @@ public:
 
     virtual void AcceptLightRay(ULightRay* Ray, FVector& Direction, FHitResult& Hit);
 
-    UFUNCTION(BlueprintCallable, Category = "OpticalReceiver")
-    void SetRequiredColors(TArray<FLinearColor> RequiredColors);
+    UFUNCTION(BlueprintImplementableEvent, Category = "OpticalReceiver")
+    void Satisfied();
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FLinearColor> RequiredColors;
 
 private:
     static const FVector IndicatorSpots[14];
@@ -43,4 +46,5 @@ private:
 
     UStaticMesh* IndicatorMesh;
     UMaterial* IndicatorMat;
+    bool bHasBeenSatisfied;
 };
