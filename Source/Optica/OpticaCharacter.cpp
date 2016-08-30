@@ -97,7 +97,7 @@ void AOpticaCharacter::TouchStopped(const ETouchIndex::Type FingerIndex, const F
 void AOpticaCharacter::Drop() {
     if (PickupPhysics) {
         PickupPhysics->SetEnableGravity(true);
-        PickupPhysics->BodyInstance.SetLinearVelocity(GetActorRotation().RotateVector(DropOffVelocity), false);
+        PickupPhysics->SetPhysicsLinearVelocity(GetActorRotation().RotateVector(DropOffVelocity), false);
 
         PickupPhysics = nullptr;
     }
@@ -207,6 +207,9 @@ void AOpticaCharacter::FloatPickup(float DeltaTime) {
         PreviousDesiredLoc = DesiredLoc;
     }
 
+    // PickedUpActor->GetRootComponent()->SetWorldLocationAndRotationNoPhysics(DesiredLoc, PickedUpActor->GetActorRotation());
+    if (PickupPhysics)
+        PickupPhysics->SetPhysicsLinearVelocity(GetRootComponent()->ComponentVelocity);
     PickedUpActor->SetActorLocation(DesiredLoc);
 }
 

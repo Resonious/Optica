@@ -28,10 +28,6 @@ public:
     UFUNCTION(BlueprintImplementableEvent, Category = "LightSource")
     void HitCharacter(class ACharacter* character, FRotator orientation);
 
-#ifdef WITH_EDITORONLY_DATA
-    virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-#endif
-
 protected:
     class UArrowComponent* ArrowComponent;
 

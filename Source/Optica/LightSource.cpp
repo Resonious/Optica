@@ -22,15 +22,6 @@ ALightSource::ALightSource()
     ArrowComponent->SetSimulatePhysics(false);
 }
 
-#ifdef WITH_EDITORONLY_DATA
-void ALightSource::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) {
-    Super::PostEditChangeProperty(PropertyChangedEvent);
-
-    if (Ray) Ray->SetColor(LightColor);
-    ArrowComponent->SetArrowColor_New(LightColor);
-}
-#endif
-
 // Called when the game starts or when spawned
 void ALightSource::BeginPlay()
 {
